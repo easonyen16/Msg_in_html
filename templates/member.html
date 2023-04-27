@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ member_name }} 的訊息</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2GN869V82C"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'G-2GN869V82C');
+    </script>
+    <style>
+        .message {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .message-text {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .message-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-top: 5px;
+        }
+        .message-video {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-top: 5px;
+        }
+        .timestamp {
+            font-size: 12px;
+            color: #888;
+            margin-left: 10px;
+            align-self: flex-end;
+        }
+        .audio-container {
+            position: relative;
+            width: 100%;
+        }
+        .audio-wrapper {
+            display: inline-block;
+            width: 100%;
+        }
+        .audio-player {
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .audio-player {
+                width: 100%;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1200px) {
+            .audio-player {
+                width: 75%;
+            }
+        }
+
+        @media (min-width: 1201px) {
+            .audio-player {
+                width: 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ member_name }} 的訊息</h1>
+
+    <!-- 在此處添加訊息顯示代碼 -->
+    <div id="messages-container"></div>
+
+    <script>
+        let messages = [];
+        let loadedIndex = 0;
+        const messagesPerPage = 10;
+
+        function loadMoreMessages() {
+            for (let i = loadedIndex; i < Math.min(loadedIndex + messagesPerPage, messages.length); i++) {
+                const message = messages[i];
+                let messageHTML = '';
+
+                messageHTML = `<div class="message">
+                                  <img class="avatar" src="/static/data/avatar/{{member_name}}.jpg" alt="Avatar">
+                                  <div class="message-content">
+                                      <div class="message-text">`;
+
+                if (message.type === 'text') {
+                    messageHTML += `${message.content}`;
+                } else if (message.type === 'image') {
+                    messageHTML += `${message.content}<img class="message-image" src="${message.image_path}" alt="Image">`;
+                } else if (message.type === 'audio') {
+                    messageHTML += `<div class="audio-container">
+                                        <img class="audio-placeholder" src="/static/data/phone_image/{{member_name}}.jpg" alt="Phone" onclick="toggleAudioPlayer(this.nextElementSibling)" style="width: 100%;">
+                                        <audio class="audio-player" controls src="${message.audio_path}" style="width: 100%;"></audio>
+                                    </div>`;
+                } else if (message.type === 'video') {
+                    messageHTML += `<video class="message-video" controls src="${message.video_path}" style="width: 100%;"></video>`;
+                }
+
+                messageHTML += `</div>
+                                <div class="timestamp">${message.timestamp}</div>
+                              </div>
+                          </div>`;
+        
+                document.getElementById('messages-container').innerHTML += messageHTML;
+            }
+
+            loadedIndex += messagesPerPage;
+            if (loadedIndex >= messages.length) {
+                document.getElementById('load-more').style.display = 'none';
+            }
+        }
+
+        // 獲取成員訊息並載入前 10 條
+        fetch(`/api/member/{{ member_name }}/messages`)
+            .then(response => response.json())
+            .then(data => {
+                messages = data.reverse();
+                loadMoreMessages();
+            });
+        
+            window.addEventListener('scroll', () => {
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+                    loadMoreMessages();
+                }
+            });
+
+    </script>
+</body>
+</html>    
