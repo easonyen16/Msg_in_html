@@ -1,0 +1,13 @@
+Flask==2.2.3
+Flask_Login==0.6.2
+Flask_Mail==0.9.1
+Flask_Migrate==4.0.4
+flask_sqlalchemy==3.0.3
+itsdangerous==2.1.2
+MeCab==0.996.3
+mecab_python3==1.0.7.dev1+g6a1ecfd
+python_dateutil==2.8.2
+pytz==2022.7.1
+schedule==1.2.0
+SQLAlchemy==2.0.11
+Werkzeug==2.2.3

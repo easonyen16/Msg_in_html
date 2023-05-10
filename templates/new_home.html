@@ -1,25 +1,17 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{groupname}}Message</title>
+    <title>Message</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2GN869V82C"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-    
-      gtag('config', 'G-2GN869V82C');
-    </script>
     <style>
         .card {
             width: 12rem;
+            margin-bottom: 20px;
         }
         .card-img-top.rounded-circle {
             border-radius: 50%;
@@ -37,7 +29,7 @@
                 height: 100px;
             }
         }
-    </style>    
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -88,21 +80,39 @@
         </div>
     </nav>
     <div class="container">
-        <div class="row">
-            {% for member in members %}
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="{{ url_for('member', member_name=member.name) }}" class="text-decoration-none">
+        <div class="row justify-content-center">
+            <div class="col-6 col-md-4 col-lg-3 text-center">
+                <a href="{{ url_for('nogizaka') }}" class="text-decoration-none">
                     <div class="card">
-                        <img src="{{ member.avatar }}" class="card-img-top rounded-circle" alt="{{ member.name }}'s avatar">
+                        <img src="/static/data/avatar/乃木坂46.jpg" class="card-img-top rounded-circle" alt="Nogizaka46">
                         <div class="card-body">
-                            <h5 class="card-title text-center">{{ member.name }}</h5>
+                            <h5 class="card-title">乃木坂46</h5>
                         </div>
                     </div>
                 </a>
             </div>
-            {% endfor %}
+            <div class="col-6 col-md-4 col-lg-3 text-center">
+                <a href="{{ url_for('hinatazaka') }}" class="text-decoration-none">
+                    <div class="card">
+                        <img src="/static/data/avatar/日向坂46.jpg" class="card-img-top rounded-circle" alt="Hinatazaka46">
+                        <div class="card-body">
+                            <h5 class="card-title">日向坂46</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3 text-center">
+                <a href="{{ url_for('sakurazaka') }}" class="text-decoration-none">
+                    <div class="card">
+                        <img src="/static/data/avatar/櫻坂46.jpg" class="card-img-top rounded-circle" alt="Sakurazaka46">
+                        <div class="card-body">
+                            <h5 class="card-title">櫻坂46</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
-    </div>     
+    </div>
 </body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </html>

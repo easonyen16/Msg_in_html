@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>使用者列表</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2GN869V82C"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'G-2GN869V82C');
+    </script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .table-container {
+            max-width: 1100px;
+            margin: 5% auto;
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">首頁</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            統計數據
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('stats') }}">月度統計</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('daily_stats') }}">每日統計</a></li>
+                        </ul>
+                    </li>
+                    {% if not current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">登入</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">註冊</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('permissions') }}">權限</a>
+                        </li>
+                        {% if current_user.role.name == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('change_group') }}">更改成員群組</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('show_users') }}">後台</a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a href="{{ url_for('logout') }}" class="nav-link">登出</a>
+                        </li>
+                        <li class="nav-item">
+                            <span class="navbar-text">歡迎，{{ current_user.username }}！</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="table-container">
+            <h3 class="text-center mb-4">使用者列表</h3>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>使用者名稱</th>
+                            <th>電子郵件</th>
+                            <th>註冊日期</th>
+                            <th>額外資訊</th>
+                            <th>帳戶狀態</th>
+                            <th>操作</th>
+                            <th>拒絕</th>
+                            <th scope="col">設定成員訪問權限</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.registration_date }}</td>
+                                <td>{{ user.additional_info }}</td>
+                                <td>{{ '已啟用' if user.is_active else '未啟用' }}</td>
+                                <td>
+                                    {% if not user.is_active %}
+                                        <form method="POST" action="{{ url_for('activate_user', user_id=user.id) }}">
+                                            <input type="submit" value="啟用帳戶" class="btn btn-primary">
+                                        </form>
+                                    {% else %}
+                                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteAccountModal" data-user-id="{{ user.id }}">
+                                            刪除帳戶
+                                        </button>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not user.is_active %}
+                                        <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#rejectAccountModal" data-user-id="{{ user.id }}">
+                                            拒絕
+                                        </button>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#memberAccessModal" data-user-id="{{ user.id }}">
+                                        設定
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- Member Access Modal -->
+    <div class="modal fade" id="memberAccessModal" tabindex="-1" role="dialog" aria-labelledby="memberAccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="memberAccessModalLabel">設定成員訪問權限</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ url_for('update_member_access') }}" method="post">
+                    <div class="modal-body">
+                        <button type="button" id="selectAll" class="btn btn-secondary mb-3">全選</button>
+                        <button type="button" id="deselectAll" class="btn btn-secondary mb-3 ml-2">全不選</button>
+                        <!-- 在這裡添加複選框以選擇成員 -->
+                        {% for member in members %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="member_access[]" id="member-{{ member.id }}" value="{{ member.id }}">
+                            <label class="form-check-label" for="member-{{ member.id }}">
+                                {{ member.name }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        <input type="hidden" name="user_id" id="user_id" value="">
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>                
+            </div>
+        </div>
+    </div> 
+    <!-- Delete Account Modal -->
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1" role="dialog" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form method="POST" action="{{ url_for('delete_user') }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteAccountModalLabel">確認刪除帳戶</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="delete-user-id" name="user_id">
+                        <div class="form-group">
+                            <label for="delete-reason">刪除原因:</label>
+                            <textarea id="delete-reason" name="delete_reason" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        <input type="submit" value="確認刪除" class="btn btn-danger">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Reject Account Modal -->
+    <div class="modal fade" id="rejectAccountModal" tabindex="-1" role="dialog" aria-labelledby="rejectAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form method="POST" action="{{ url_for('reject_user') }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rejectAccountModalLabel">確認拒絕帳戶</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="reject-user-id" name="user_id">
+                        <div class="form-group">
+                            <label for="reject-reason">拒絕原因:</label>
+                            <textarea id="reject-reason" name="reject_reason" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        <input type="submit" value="確認拒絕" class="btn btn-warning">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#deleteAccountModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget); // Button that triggered the modal
+                var user_id = button.data('user-id'); // Extract user_id from data-* attribute
+                var modal = $(this);
+                modal.find('#delete-user-id').val(user_id);
+            });
+        });
+        $(document).ready(function () {
+            $('#rejectAccountModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget); // Button that triggered the modal
+                var user_id = button.data('user-id'); // Extract user_id from data-* attribute
+                var modal = $(this);
+                modal.find('#reject-user-id').val(user_id);
+            });
+        });
+        function getUserAccess(user_id, callback) {
+            $.ajax({
+                url: `/api/get_user_access/${user_id}`,
+                type: 'GET',
+                success: function(response) {
+                    callback(response);
+                },
+                error: function(error) {
+                    console.error("Error:", error);
+                }
+            });
+        }
+
+        $('#memberAccessModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget); // 按钮，触发模态框
+            const user_id = button.data('user-id'); // 从按钮上获取 user_id
+
+            // 把 user_id 设置到隐藏字段中
+            const input = $('#user_id');
+            input.val(user_id);
+
+            getUserAccess(user_id, function(userAccess) {
+                console.log("User Access:", userAccess); // 查看从API获取到的数据
+
+                // 先取消选中所有复选框
+                $('.form-check-input').prop('checked', false);
+
+                // 根据用户的权限设置来选中复选框
+                $('.form-check-input').each(function() {
+                    const memberId = $(this).val();
+                    console.log("Member ID:", memberId); // 查看当前遍历到的复选框的member ID
+                
+                    if (userAccess.includes(memberId.toString())) {
+                        console.log("Checking:", memberId); // 如果找到匹配的权限，则输出日志
+                        $(this).prop('checked', true);
+                    }
+                });
+            });
+        });
+
+        // 全选按钮的点击事件
+        $('#selectAll').click(function() {
+            $('.form-check-input').prop('checked', true);
+        });
+
+        // 全不选按钮的点击事件
+        $('#deselectAll').click(function() {
+            $('.form-check-input').prop('checked', false);
+        });
+    </script>
+</body>
+</html>

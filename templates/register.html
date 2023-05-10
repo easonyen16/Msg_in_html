@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>註冊</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2GN869V82C"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'G-2GN869V82C');
+    </script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .register-container {
+            max-width: 500px;
+            margin: 5% auto;
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">首頁</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            統計數據
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('stats') }}">月度統計</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('daily_stats') }}">每日統計</a></li>
+                        </ul>
+                    </li>
+                    {% if not current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">登入</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">註冊</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('permissions') }}">權限</a>
+                        </li>
+                        {% if current_user.role.name == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('change_group') }}">更改成員群組</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('show_users') }}">後台</a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a href="{{ url_for('logout') }}" class="nav-link">登出</a>
+                        </li>
+                        <li class="nav-item">
+                            <span class="navbar-text">歡迎，{{ current_user.username }}！</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="register-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <h1 class="text-center mb-4">註冊</h1>
+            <form method="POST">
+                <div class="form-group">
+                    <label for="username">使用者名稱:</label>
+                    <input type="text" id="username" name="username" class="form-control" pattern="[A-Za-z0-9]+" required>
+                    <small class="form-text text-muted">僅允許英文字母和數字</small>
+                </div>
+                <div class="form-group">
+                    <label for="email">電子郵件:</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">密碼:</label>
+                    <input type="password" id="password" name="password" class="form-control" required oninput="checkPasswordMatch()">
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">確認密碼:</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" required oninput="checkPasswordMatch()">
+                    <span id="password_error_message" class="text-danger" style="display:none;">密碼不匹配</span>
+                </div>
+                <div class="form-group">
+                    <label for="additional_info">額外註冊資訊（選填）:</label>
+                    <textarea id="additional_info" name="additional_info" rows="4" cols="50" class="form-control"></textarea>
+                </div>
+                <br>
+                <div class="btn-container">
+                    <input type="submit" value="註冊" class="btn btn-primary">
+                    <a href="{{ url_for('login') }}" class="btn btn-secondary">登入</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        function checkPasswordMatch() {
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+            const errorMessage = document.getElementById('password_error_message');
+    
+            if (password.value !== confirmPassword.value) {
+                errorMessage.style.display = 'block';
+                confirmPassword.setCustomValidity('Passwords do not match.');
+            } else {
+                errorMessage.style.display = 'none';
+                confirmPassword.setCustomValidity('');
+            }
+        }
+    </script>    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
